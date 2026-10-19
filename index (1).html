@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>5Tech Davomat</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+  // ===== Apps Script Web App manzilini shu yerga qo'ying =====
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxPwAyFSVKFKFoJ7h2uQlhqYK9IYS3KmlZi_q98HtxoI6ZUGewy1_gP1_QHnNk09DrGWA/exec';
+</script>
+<style>
+  :root{
+    --bg: var(--tg-theme-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #1A1A1A);
+    --hint: var(--tg-theme-hint-color, #8A8D91);
+    --card: var(--tg-theme-secondary-bg-color, #F3F3F4);
+    --ink: #1A1A1A; --silver: #A2A5A9; --ok: #1F9D55; --bad: #D93636;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;background:var(--bg);color:var(--text);font-size:16px}
+  .wrap{max-width:480px;margin:0 auto;padding:20px 16px 32px;min-height:100%;display:flex;flex-direction:column}
+  .logo{display:flex;align-items:flex-end;gap:6px;margin-bottom:22px}
+  .logo svg{height:26px;width:auto}
+  .logo b{font-weight:700;letter-spacing:4px;color:var(--silver);font-size:18px;line-height:1}
+  .logo svg .ink{fill:var(--text)}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.3px;line-height:1.2}
+  .sub{color:var(--hint);font-size:14px;margin-top:6px;line-height:1.45}
+  .card{background:var(--card);border-radius:16px;padding:16px;margin-top:18px}
+  .row{display:flex;justify-content:space-between;align-items:center;padding:10px 0}
+  .row + .row{border-top:1px solid rgba(128,128,128,.18)}
+  .row span{color:var(--hint);font-size:14px}
+  .row strong{font-size:18px;font-weight:700}
+  .row strong.ok{color:var(--ok)}
+  label{display:block;font-size:13px;color:var(--hint);margin:14px 0 6px}
+  input{width:100%;font:inherit;padding:14px;border-radius:12px;border:1px solid rgba(128,128,128,.3);background:var(--bg);color:var(--text)}
+  .btn{display:block;width:100%;border:0;border-radius:14px;padding:17px;font:inherit;font-weight:700;font-size:17px;margin-top:14px;cursor:pointer;background:var(--ink);color:#fff}
+  .btn.ghost{background:transparent;color:var(--text);border:1.5px solid rgba(128,128,128,.4)}
+  .btn.red{background:var(--bad)}
+  .btn:disabled{opacity:.5}
+  .spacer{flex:1}
+  .msg{border-radius:12px;padding:12px 14px;margin-top:14px;font-size:14px;line-height:1.45;display:none}
+  .msg.err{display:block;background:rgba(217,54,54,.1);color:var(--bad)}
+  .msg.info{display:block;background:var(--card);color:var(--text)}
+  .center{text-align:center;margin-top:40px}
+  .big-ic{font-size:56px;margin-bottom:12px}
+  .admin{margin-top:28px;border-top:1px dashed rgba(128,128,128,.35);padding-top:12px}
+  .admin p{font-size:12px;color:var(--hint)}
+  .spin{width:34px;height:34px;border:3px solid rgba(128,128,128,.25);border-top-color:var(--text);border-radius:50%;animation:s 1s linear infinite;margin:60px auto 14px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  /* kamera */
+  #cam{position:fixed;inset:0;background:#000;display:none;flex-direction:column;z-index:10}
+  #cam .stage{flex:1;position:relative;overflow:hidden}
+  #cam video,#cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #cam video{transform:scaleX(-1)}
+  #cam img{object-fit:contain}
+  #cam .oval{position:absolute;left:50%;top:44%;width:62%;aspect-ratio:3/4;transform:translate(-50%,-50%);border:3px dashed rgba(255,255,255,.75);border-radius:50%;pointer-events:none}
+  #cam .top{position:absolute;top:0;left:0;right:0;padding:56px 16px 16px;color:#fff;font-weight:600;text-align:center;background:linear-gradient(rgba(0,0,0,.55),transparent);font-size:15px}
+  #cam .bar{padding:18px 20px calc(18px + env(safe-area-inset-bottom));display:flex;align-items:center;justify-content:center;gap:14px;background:#000}
+  #shoot{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:#fff;box-shadow:inset 0 0 0 4px #000;cursor:pointer}
+  #cam .bar .btn{margin:0;flex:1}
+  #cam .x{position:absolute;top:12px;left:12px;z-index:2;background:rgba(0,0,0,.45);color:#fff;border:0;border-radius:20px;padding:8px 14px;font:inherit;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="spin"></div><p class="sub" style="text-align:center">Yuklanmoqda…</p></div>
+
+<div id="cam">
+  <div class="stage">
+    <video id="video" playsinline autoplay muted></video>
+    <img id="preview" alt="" style="display:none">
+    <div class="oval" id="oval"></div>
+    <div class="top" id="camTitle">Yuzingizni ramkaga to'g'rilang</div>
+    <button class="x" id="camClose">✕ Bekor</button>
+  </div>
+  <div class="bar" id="barShoot"><button id="shoot" aria-label="Rasmga olish"></button></div>
+  <div class="bar" id="barSend" style="display:none">
+    <button class="btn ghost" id="retake" style="color:#fff;border-color:#666">Qayta olish</button>
+    <button class="btn" id="send" style="background:#fff;color:#000">Yuborish</button>
+  </div>
+</div>
+<canvas id="canvas" style="display:none"></canvas>
+
+<script>
+const tg = window.Telegram && window.Telegram.WebApp;
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const LOGO = '<div class="logo"><svg viewBox="0 0 100 104"><polygon points="24,0 100,0 92,20 16,20" fill="#A2A5A9"/><path class="ink" fill-rule="evenodd" d="M24,28 H60 A38,38 0 0 1 60,104 H4 L18,88 V36 Q18,28 24,28 Z M36,46 V86 H58 A20,20 0 0 0 58,46 Z"/></svg><b>TECH</b></div>';
+let S = null;            // status
+let stream = null, shot = null, pending = null, loc = null, locP = null;
+function cacheKey(){ try{ return 'st_'+tg.initDataUnsafe.user.id; }catch(e){ return 'st'; } }
+function saveCache(){ try{ localStorage.setItem(cacheKey(), JSON.stringify(Object.assign({}, S, {day:new Date().toDateString()}))); }catch(e){} }
+function warmLocation(){ if(!locP){ locP = getLocation().then(l => (loc = l), e => { locP = null; throw e; }); locP.catch(()=>{}); } return locP; }
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function haptic(t){try{tg.HapticFeedback.notificationOccurred(t)}catch(e){}}
+
+async function api(action, data){
+  const r = await fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(Object.assign({action, initData: tg.initData, platform: tg.platform}, data||{}))});
+  return r.json();
+}
+
+function render(html){ app.innerHTML = LOGO + html; }
+function loading(t){ render('<div class="spin"></div><p class="sub" style="text-align:center">'+esc(t)+'</p>'); }
+function errBox(t){ return '<div class="msg err">'+esc(t)+'</div>'; }
+
+async function load(){
+  if(!tg || !tg.initData){ render('<h1>Botdan oching</h1><p class="sub">Bu sahifa faqat 5Tech davomat boti ichida ishlaydi.</p>'); return; }
+  let cached = null;
+  try{ cached = JSON.parse(localStorage.getItem(cacheKey())||'null'); }catch(e){}
+  if(cached && cached.status==='Faol'){
+    if(cached.day !== new Date().toDateString()){ cached.keldi = null; cached.ketdi = null; }
+    S = cached; showMain();
+  } else loading('Yuklanmoqda…');
+  let fresh;
+  try{ fresh = await api('status'); }catch(e){ fresh = {ok:false, error:"Internetni tekshiring"}; }
+  if(!fresh.ok && cached && cached.status==='Faol') return;
+  S = fresh; if(S.ok) saveCache();
+  if(!S.ok){ render('<h1>Xatolik</h1>'+errBox(S.error)+'<button class="btn" onclick="load()">Qayta urinish</button>'); return; }
+  if(!S.registered) return showRegister();
+  if(S.status !== 'Faol') return showPending();
+  showMain();
+}
+
+function showRegister(err){
+  const u = tg.initDataUnsafe.user || {};
+  render('<h1>Ro\'yxatdan o\'tish</h1><p class="sub">Bir marta to\'ldiriladi. Rahbar tasdiqlagach, kelish-ketishni belgilay olasiz.</p>'+
+    '<label>Ism va familiya</label><input id="fName" autocomplete="name" placeholder="Masalan: Ruzimov Sardor" value="'+esc([u.first_name,u.last_name].filter(Boolean).join(' '))+'">'+
+    '<label>Telefon raqam</label><input id="fPhone" type="tel" inputmode="tel" placeholder="+998 90 123 45 67">'+
+    (err?errBox(err):'')+'<button class="btn" id="regBtn">Yuborish</button>');
+  $('#regBtn').onclick = async () => {
+    const b = $('#regBtn'); b.disabled = true; b.textContent = 'Yuborilmoqda…';
+    const r = await api('register', {name: $('#fName').value, phone: $('#fPhone').value}).catch(()=>({ok:false,error:'Internetni tekshiring'}));
+    if(!r.ok) return showRegister(r.error);
+    S = r; S.status === 'Faol' ? showMain() : showPending();
+  };
+}
+
+function showPending(){
+  render('<div class="center"><div class="big-ic">⏳</div><h1>Tasdiq kutilmoqda</h1><p class="sub">'+esc(S.name)+', ma\'lumotlaringiz rahbarga yuborildi. Tasdiqlangach, shu yerdan kelish-ketishni belgilaysiz.</p></div>'+
+    '<div class="spacer"></div><button class="btn ghost" onclick="load()">Tekshirish</button>');
+}
+
+function showMain(err){
+  const k = S.keldi, q = S.ketdi;
+  let action = '';
+  if(!k) action = '<button class="btn" id="go" data-t="keldi">📷 Keldim</button>';
+  else if(!q) action = '<button class="btn red" id="go" data-t="ketdi">📷 Ketyapman</button>';
+  else action = '<div class="msg info">Bugungi ish kuni belgilandi. Rahmat! 👋</div>';
+  const today = new Date().toLocaleDateString('ru-RU');
+  render('<h1>Salom, '+esc(String(S.name).split(' ').slice(-1)[0] || S.name)+'!</h1><p class="sub">'+today+' · Ish vaqti '+S.workStart+'–'+S.workEnd+'</p>'+
+    '<div class="card"><div class="row"><span>Keldi</span><strong class="'+(k?'ok':'')+'">'+(k||'—')+'</strong></div>'+
+    '<div class="row"><span>Ketdi</span><strong class="'+(q?'ok':'')+'">'+(q||'—')+'</strong></div></div>'+
+    (err?errBox(err):'')+'<div class="spacer"></div>'+action+
+    '<p class="sub" style="text-align:center;margin-top:10px;font-size:12px">Rasm faqat jonli kameradan olinadi · do\'kondan '+S.radius+' m ichida</p>'+
+    (S.isAdmin ? '<div class="admin"><p>Admin: do\'kon joyi '+(S.shopSet?'saqlangan ✓':'<b style="color:var(--bad)">saqlanmagan</b>')+'. Do\'kon ichida turib bosing.</p><button class="btn ghost" id="setShop">📍 Do\'kon joyini shu yerga saqlash</button></div>' : ''));
+  const go = $('#go'); if(go){ go.onclick = () => startFlow(go.dataset.t); if(S.shopSet) warmLocation(); }
+  const ss = $('#setShop'); if(ss) ss.onclick = saveShop;
+}
+
+// ---------- joylashuv ----------
+function browserGeo(){
+  return new Promise((res, rej) => {
+    if(!navigator.geolocation) return rej(new Error('Telefoningiz joylashuvni bermayapti'));
+    navigator.geolocation.getCurrentPosition(
+      p => res({lat:p.coords.latitude, lng:p.coords.longitude, acc:p.coords.accuracy}),
+      e => rej(new Error(e.code===1 ? 'Joylashuvga ruxsat bering (telefon sozlamalarida Telegram uchun GPS yoqilsin)' : 'Joylashuv aniqlanmadi. GPS yoqilganini tekshiring.')),
+      {enableHighAccuracy:true, timeout:15000, maximumAge:60000});
+  });
+}
+function getLocation(){
+  const lm = tg.LocationManager;
+  if(!lm || !tg.isVersionAtLeast || !tg.isVersionAtLeast('8.0')) return browserGeo();
+  return new Promise((res, rej) => {
+    lm.init(() => {
+      if(!lm.isLocationAvailable) return browserGeo().then(res, rej);
+      lm.getLocation(l => {
+        if(l) return res({lat:l.latitude, lng:l.longitude, acc:l.horizontal_accuracy});
+        if(lm.isAccessRequested && !lm.isAccessGranted){
+          rej(Object.assign(new Error('Joylashuvga ruxsat berilmagan. Bot sozlamalarida ruxsat bering.'), {settings:true}));
+        } else rej(new Error('Joylashuv aniqlanmadi. GPS yoqilganini tekshiring.'));
+      });
+    });
+  });
+}
+
+async function saveShop(){
+  const b = $('#setShop'); b.disabled = true; b.textContent = 'Aniqlanmoqda…';
+  try{
+    const l = await getLocation();
+    loc = l; const r = await api('setShop', l);
+    if(!r.ok) throw new Error(r.error);
+    S.shopSet = true; haptic('success');
+    tg.showAlert('Do\'kon joyi saqlandi ✓\nAniqlik: ~'+Math.round(l.acc||0)+' m');
+    showMain();
+  }catch(e){ haptic('error'); showMain(e.message); }
+}
+
+// ---------- asosiy oqim ----------
+async function startFlow(type){
+  pending = type;
+  warmLocation().catch(()=>{});
+  openCamera();
+}
+
+async function openCamera(){
+  $('#camTitle').textContent = (pending==='keldi'?'Keldim':'Ketyapman')+' — yuzingizni ramkaga to\'g\'rilang';
+  $('#preview').style.display='none'; $('#video').style.display='block'; $('#oval').style.display='block';
+  $('#barShoot').style.display='flex'; $('#barSend').style.display='none';
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:960}}, audio:false});
+  }catch(e){
+    showMain('Kameraga ruxsat berilmadi. Telegram uchun kamera ruxsatini yoqing va qayta urinib ko\'ring.'); return;
+  }
+  $('#video').srcObject = stream;
+  $('#cam').style.display = 'flex';
+  tg.BackButton.show();
+}
+
+function closeCamera(){
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+  $('#cam').style.display = 'none'; tg.BackButton.hide();
+}
+
+function capture(){
+  const v = $('#video'); if(!v.videoWidth) return;
+  const W = 600, H = Math.round(W * v.videoHeight / v.videoWidth);
+  const c = $('#canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.save(); x.translate(W,0); x.scale(-1,1); x.drawImage(v,0,0,W,H); x.restore();
+  const d = new Date(), pad = n=>String(n).padStart(2,'0');
+  const stamp = pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+'  '+pad(d.getHours())+':'+pad(d.getMinutes());
+  x.fillStyle='rgba(0,0,0,.6)'; x.fillRect(0,H-64,W,64);
+  x.fillStyle='#fff'; x.font='bold 24px sans-serif'; x.fillText('5TECH · '+(pending==='keldi'?'KELDI':'KETDI')+' · '+stamp, 18, H-36);
+  x.font='18px sans-serif'; x.fillText(S.name, 18, H-12);
+  shot = c.toDataURL('image/jpeg', 0.72);
+  $('#preview').src = shot; $('#preview').style.display='block'; $('#video').style.display='none'; $('#oval').style.display='none';
+  $('#barShoot').style.display='none'; $('#barSend').style.display='flex';
+  haptic('success');
+}
+
+async function send(){
+  const b = $('#send'); b.disabled = true;
+  if(!loc){
+    b.textContent = 'Joylashuv aniqlanmoqda…';
+    try{ await warmLocation(); }
+    catch(e){
+      b.disabled = false; b.textContent = 'Yuborish'; closeCamera(); haptic('error'); showMain(e.message);
+      if(e.settings){ const a=document.createElement('button'); a.className='btn ghost'; a.textContent='Sozlamalarni ochish'; a.onclick=()=>tg.LocationManager.openSettings(); app.appendChild(a); }
+      return;
+    }
+  }
+  b.textContent = 'Yuborilmoqda…';
+  let r;
+  try{ r = await api('mark', {type: pending, photo: shot, lat: loc.lat, lng: loc.lng, acc: loc.acc}); }
+  catch(e){ r = {ok:false, error:'Internet yo\'q. Qayta urinib ko\'ring.'}; }
+  b.disabled = false; b.textContent = 'Yuborish';
+  closeCamera();
+  if(!r.ok){ haptic('error'); return showMain(r.error); }
+  haptic('success');
+  if(r.type==='keldi') S.keldi = r.time; else S.ketdi = r.time;
+  saveCache();
+  const note = r.type==='keldi'
+    ? (r.diff ? r.diff+' daqiqa kechikdingiz' : 'O\'z vaqtida keldingiz 👍')
+    : (r.diff ? r.diff+' daqiqa erta ketyapsiz' : 'Yaxshi dam oling!');
+  render('<div class="center"><div class="big-ic">✅</div><h1>'+(r.type==='keldi'?'Keldingiz':'Ketdingiz')+' — '+r.time+'</h1><p class="sub">'+note+'</p></div><div class="spacer"></div><button class="btn" id="ok">Yopish</button>');
+  $('#ok').onclick = () => tg.close();
+}
+
+$('#shoot').onclick = capture;
+$('#retake').onclick = () => { $('#preview').style.display='none'; $('#video').style.display='block'; $('#oval').style.display='block'; $('#barShoot').style.display='flex'; $('#barSend').style.display='none'; };
+$('#send').onclick = send;
+$('#camClose').onclick = () => { closeCamera(); showMain(); };
+
+if(tg){ tg.ready(); tg.expand(); tg.BackButton.onClick(()=>{ closeCamera(); showMain(); }); }
+load();
+</script>
+</body>
+</html>
